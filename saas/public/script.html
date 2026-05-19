@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MySQLHealthCheck V3.0 采集脚本</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #e6ebf1 100%);
+      min-height: 100vh; padding: 24px;
+    }
+    .container { max-width: 900px; margin: 0 auto; }
+    header { margin-bottom: 24px; }
+    .back { color: #1f4e79; text-decoration: none; font-size: 14px; display: inline-flex; align-items: center; gap: 4px; }
+    .back:hover { text-decoration: underline; }
+    h1 { color: #1f4e79; margin: 12px 0 8px 0; font-size: 26px; }
+    .subtitle { color: #6b7280; font-size: 14px; }
+    .card {
+      background: #fff; border-radius: 12px; padding: 28px; margin-bottom: 20px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.04);
+    }
+    .card-title { font-size: 16px; font-weight: 600; color: #1f4e79; margin: 0 0 16px 0; }
+    p, li { color: #374151; font-size: 14px; line-height: 1.8; }
+    code {
+      background: #f3f4f6; padding: 2px 6px; border-radius: 4px; font-family: 'SF Mono', Monaco, monospace;
+      font-size: 13px; color: #1f4e79;
+    }
+    pre {
+      background: #1f2937; color: #e5e7eb; padding: 16px; border-radius: 8px;
+      overflow-x: auto; font-family: 'SF Mono', Monaco, monospace; font-size: 13px; line-height: 1.6;
+    }
+    pre .comment { color: #6b7280; }
+    pre .cmd { color: #fbbf24; }
+    .btn {
+      background: #1f4e79; color: #fff; border: none; padding: 12px 28px;
+      border-radius: 6px; font-size: 15px; font-weight: 500; cursor: pointer;
+      transition: background 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn:hover { background: #163a5a; }
+    .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-top: 12px; }
+    .feature {
+      background: #f9fafb; border-radius: 8px; padding: 16px;
+    }
+    .feature h4 { margin: 0 0 6px 0; color: #1f4e79; font-size: 14px; }
+    .feature p { margin: 0; font-size: 13px; color: #6b7280; }
+    .footer { margin-top: 32px; text-align: center; color: #9ca3af; font-size: 12px; }
+    @media (max-width: 600px) {
+      .feature-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="back">&larr; 返回报告生成器</a>
+      <h1>🩺 MySQLHealthCheck V3.0 采集脚本</h1>
+      <div class="subtitle">单脚本、单 txt 输出，覆盖 13 大巡检模块的自动化数据采集工具</div>
+    </header>
+
+    <div class="card">
+      <div class="card-title">📋 脚本简介</div>
+      <p><code>mysqlHealthCheckV3.0.sh</code> 是一款面向 MySQL / MariaDB 的专业巡检数据采集脚本，由 <strong>DBAClaw</strong> 维护。它通过单次执行即可完成操作系统、数据库实例、复制架构、存储对象、用户权限、会话锁、InnoDB 引擎、SQL 性能、日志、备份恢复、安全合规等 13 大模块的全面采集，输出标准化的 <code>MySQLHealthCheck_&lt;IP&gt;_&lt;时间戳&gt;.txt</code> 文件。</p>
+      <p style="margin-top:12px">采集后的 txt 文件可直接上传到本平台的「MySQL 巡检报告生成器」，一键生成包含执行摘要、健康度评分、TOP SQL 治理、根因关联、合规对照等 17 章内容的商业可交付级 Word 报告。</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">✨ 核心特性</div>
+      <div class="feature-grid">
+        <div class="feature">
+          <h4>🔍 自动发现</h4>
+          <p>从 ps -ef 自动解析 mysqld 进程参数，自动发现 basedir、socket、defaults-file、port 等关键配置</p>
+        </div>
+        <div class="feature">
+          <h4>🧪 登录预检</h4>
+          <p>采集前强制验证数据库连通性，支持 SSL 模式自动降级，避免生成空报告</p>
+        </div>
+        <div class="feature">
+          <h4>📦 单文件输出</h4>
+          <p>所有 13 个模块的数据统一输出到单个 txt，便于传输、归档和后续自动化处理</p>
+        </div>
+        <div class="feature">
+          <h4>⚙️ 灵活配置</h4>
+          <p>支持命令行参数、交互式补全、模块跳过（--skip-modules）、自定义备份路径等</p>
+        </div>
+        <div class="feature">
+          <h4>🛡️ 安全脱敏</h4>
+          <p>自动对 my.cnf 中的 password、ssl_key 等敏感字段进行掩码处理（*******）</p>
+        </div>
+        <div class="feature">
+          <h4>📊 版本兼容</h4>
+          <p>完美兼容 MySQL 5.6 / 5.7 / 8.0 及 MariaDB，自动识别版本并切换对应 SQL 方言</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🚀 快速开始</div>
+      <p><strong>1. 交互式用法（推荐首次使用）：</strong></p>
+      <pre><span class="cmd">./mysqlHealthCheckV3.0.sh</span></pre>
+      <p>脚本会自动发现运行中的 mysqld 进程参数，并提示你确认/补全连接信息。</p>
+
+      <p style="margin-top:16px"><strong>2. 命令行参数用法（适合批量/自动化）：</strong></p>
+      <pre><span class="cmd">./mysqlHealthCheckV3.0.sh \
+  --user dbadmin --password 'YourPass' \
+  --host 127.0.0.1 --port 3306 \
+  --output-dir ./reports \
+  --slow-log-lines 5000 \
+  --error-log-lines 1000</span></pre>
+
+      <p style="margin-top:16px"><strong>3. 仅测试登录：</strong></p>
+      <pre><span class="cmd">./mysqlHealthCheckV3.0.sh --test-login --non-interactive</span></pre>
+
+      <p style="margin-top:16px"><strong>4. 跳过特定模块：</strong></p>
+      <pre><span class="cmd">./mysqlHealthCheckV3.0.sh --skip-modules "logs,backup,interview"</span></pre>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📖 常用参数速查</div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead>
+          <tr style="background:#1f4e79;color:#fff">
+            <th style="padding:10px 12px;text-align:left;border-radius:6px 0 0 0">参数</th>
+            <th style="padding:10px 12px;text-align:left">说明</th>
+            <th style="padding:10px 12px;text-align:left;border-radius:0 6px 0 0">示例</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="background:#f9fafb"><td style="padding:8px 12px"><code>--user</code></td><td style="padding:8px 12px">数据库用户名</td><td style="padding:8px 12px"><code>--user dbadmin</code></td></tr>
+          <tr><td style="padding:8px 12px"><code>--password</code></td><td style="padding:8px 12px">数据库密码</td><td style="padding:8px 12px"><code>--password 'xxx'</code></td></tr>
+          <tr style="background:#f9fafb"><td style="padding:8px 12px"><code>--host</code></td><td style="padding:8px 12px">目标主机 IP</td><td style="padding:8px 12px"><code>--host 192.168.1.10</code></td></tr>
+          <tr><td style="padding:8px 12px"><code>--socket</code></td><td style="padding:8px 12px">Unix Socket 路径</td><td style="padding:8px 12px"><code>--socket /tmp/mysql.sock</code></td></tr>
+          <tr style="background:#f9fafb"><td style="padding:8px 12px"><code>--defaults-file</code></td><td style="padding:8px 12px">指定 my.cnf</td><td style="padding:8px 12px"><code>--defaults-file /etc/my.cnf</code></td></tr>
+          <tr><td style="padding:8px 12px"><code>--output-dir</code></td><td style="padding:8px 12px">输出目录</td><td style="padding:8px 12px"><code>--output-dir ./reports</code></td></tr>
+          <tr style="background:#f9fafb"><td style="padding:8px 12px"><code>--skip-modules</code></td><td style="padding:8px 12px">跳过指定模块</td><td style="padding:8px 12px"><code>--skip-modules "os,logs"</code></td></tr>
+          <tr><td style="padding:8px 12px"><code>--test-login</code></td><td style="padding:8px 12px">仅测试登录</td><td style="padding:8px 12px"><code>--test-login</code></td></tr>
+          <tr style="background:#f9fafb"><td style="padding:8px 12px"><code>--non-interactive</code></td><td style="padding:8px 12px">非交互模式</td><td style="padding:8px 12px"><code>--non-interactive</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📥 下载脚本</div>
+      <p>点击下方按钮下载最新版采集脚本，保存后在目标 MySQL 服务器上执行即可。</p>
+      <div style="margin-top:16px">
+        <a class="btn" href="/download/mysqlHealthCheckV3.0.sh" download>
+          📥 下载 mysqlHealthCheckV3.0.sh
+        </a>
+      </div>
+      <p style="margin-top:12px;font-size:12px;color:#6b7280">文件大小约 18 KB · 兼容 Bash 4.0+ · 支持 Linux / macOS</p>
+    </div>
+
+    <div class="footer">
+      智连数据 · 稳如乾坤 · <a href="https://dbaclaw.com" style="color:#1f4e79;text-decoration:none">dbaclaw.com</a>
+    </div>
+  </div>
+</body>
+</html>

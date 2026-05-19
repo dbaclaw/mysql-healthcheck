@@ -1,0 +1,13 @@
+package: cloud.lazycat.app.mysql-healthcheck-saas
+version: 1.0.0
+name: MySQL Health Check Report
+permissions:
+  required:
+    - document.private
+locales:
+  zh-CN:
+    name: MySQL 巡检报告
+    description: 自动生成 MySQL 月度巡检 Word 报告，支持封面定制与懒猫 OIDC 单点登录
+  en-US:
+    name: MySQL Health Check Report
+    description: Auto-generate MySQL monthly inspection Word reports with cover customization and Lazycat OIDC SSO

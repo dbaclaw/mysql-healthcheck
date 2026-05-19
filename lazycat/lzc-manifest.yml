@@ -1,0 +1,40 @@
+application:
+  subdomain: mysql-hc
+  # 懒猫 OIDC 回调路径（必须配置才会自动注入 LAZYCAT_AUTH_OIDC_* 环境变量）
+  oidc_redirect_path: /auth/oidc.callback
+  # 公开路径：健康检查无需登录即可访问
+  public_path:
+    - /api/v1/health
+  upstreams:
+    - location: /
+      backend: http://web:3000
+      disable_trim_location: true
+
+services:
+  web:
+    image: registry.lazycat.cloud/f007/f00700f/mysql-healthcheck-saas:44446b1e225e09a5
+    environment:
+      # 懒猫系统级 OIDC 环境变量（自动注入，由 oidc_redirect_path 触发）
+      # 注意：mysql-healthcheck SaaS 不实现完整 OIDC 流程，
+      # 懒猫网关已处理认证，应用侧通过 X-HC-* 请求头获取用户信息。
+      # 此处列出仅供参考，实际应用不直接使用这些变量。
+      # - OIDC_CLIENT_ID=${LAZYCAT_AUTH_OIDC_CLIENT_ID}
+      # - OIDC_CLIENT_SECRET=${LAZYCAT_AUTH_OIDC_CLIENT_SECRET}
+      # 懒猫封面定制参数（由 lzc-deploy-params.yml 注入）
+      - LAZYCAT_COMPANY_NAME={{.U.company_name}}
+      - LAZYCAT_PREPARED_BY={{.U.prepared_by}}
+      - LAZYCAT_REPORT_TITLE={{.U.report_title}}
+      - LAZYCAT_LOGO_URL={{.U.logo_url}}
+      # 服务基础配置
+      - PORT=3000
+      - STORAGE_ROOT=/data
+      - MAX_FILES=16
+      - MAX_FILE_SIZE_MB=50
+    binds:
+      - /lzcapp/var/storage:/data
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://127.0.0.1:3000/api/v1/health', r => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

@@ -1,0 +1,29 @@
+params:
+  # ============== 报告封面定制 ==============
+  - id: company_name
+    type: text
+    name: 公司/机构名称
+    description: 出现在报告封面公司名称栏，留空使用默认值
+    default_value: "MySQL 巡检平台"
+    optional: true
+
+  - id: prepared_by
+    type: text
+    name: 默认编制人
+    description: 出现在报告「文档控制」页的编制人栏，留空则使用登录账号
+    default_value: ""
+    optional: true
+
+  - id: report_title
+    type: text
+    name: 报告标题前缀
+    description: 报告封面大标题留空则使用默认格式「[项目名] 数据库巡检报告」；填写则作为前缀显示
+    default_value: ""
+    optional: true
+
+  - id: logo_url
+    type: text
+    name: Logo 图片 URL
+    description: 报告封面右上角的 Logo，支持 https:// URL 或 data:image/png;base64,... 格式。懒猫内网环境访问外部 URL 可能受限，建议使用 Base64 或内网地址
+    default_value: ""
+    optional: true
