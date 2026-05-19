@@ -1,1 +1,7 @@
 .DS_Store
+# 忽略 macOS 系统产生的隐藏文件
+.DS_Store
+**/.DS_Store
+# 忽略 Node.js 的依赖目录
+node_modules/
+scripts/node_modules/
